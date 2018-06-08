@@ -13,7 +13,8 @@ DLLEXT = .so
 
 #------------------------------------------------------------------------------
 # Default display driver [Choices: x11, rawfb, directfb, windows]:
-# If you change it, also adjust src/Makefile and tek/lib/Makefile.
+# If you enable rawfb, see RAWFB_SUB_DEVICE below and visit src/Makefile
+# and tek/lib/Makefile if you want to enable a sub driver.
 #------------------------------------------------------------------------------
 
 DISPLAY_DRIVER ?= x11
@@ -27,22 +28,24 @@ DISPLAY_DRIVER ?= x11
 #------------------------------------------------------------------------------
 
 TEKUI_DEFS = -DENABLE_GRADIENT -DENABLE_FILENO # -DENABLE_PNG -DENABLE_DGRAM=20000
+# TEKUI_LIBS = -lpng
 
 #------------------------------------------------------------------------------
 # Compiler configuration:
+# Comment in TSYS_POSIX if your platform is not listed in include/tek/config.h
 #------------------------------------------------------------------------------
 
 # CCPREFIX =
-CC = $(CCPREFIX)gcc -fpic
+CC = $(CCPREFIX)gcc -fpic # -DTSYS_POSIX
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-# For Windows using MingW:
+# For Windows using MinGW:
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 # CC = $(CCPREFIX)gcc -mno-cygwin -DWIN32
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-# Cross-build using MingW:
+# Cross-build using MinGW:
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 # CCPREFIX = i586-mingw32-
@@ -56,7 +59,6 @@ CC = $(CCPREFIX)gcc -fpic
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
 PLATFORM_LIBS = -pthread
-# VISUAL_LIBS = -lpng
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # Windows:
@@ -84,9 +86,9 @@ SYS_LUA_SHARE = $(PREFIX)/share/lua/5.1
 LUA_DEFS = -I$(PREFIX)/include -I/usr/local/include/lua51 -I/usr/include/lua5.1
 
 FREETYPE_LIBS = -L$(PREFIX)/lib -lfreetype
-FREETYPE_DEFS = -I$(PREFIX)/include -I$(PREFIX)/include/freetype2 -I/usr/include/freetype2 -I/usr/X11R6/include/freetype2
+FREETYPE_DEFS = -I$(PREFIX)/include -I$(PREFIX)/include/freetype2 -I/usr/include/freetype2 -I/usr/X11R6/include/freetype2 -I/usr/X11/include/
 
-X11_LIBS = -L/usr/X11R6/lib -LX11 -lXext -lXxf86vm
+X11_LIBS = -L/usr/X11R6/lib -lX11 -lXext -lXxf86vm
 X11_DEFS = -I/usr/X11R6/include $(FREETYPE_DEFS) -D_XOPEN_SOURCE -DENABLE_XFT -DENABLE_XVID
 
 WIN_LIBS = $(PLATFORM_LIBS) -lgdi32
@@ -94,7 +96,7 @@ WIN_LIBS = $(PLATFORM_LIBS) -lgdi32
 # VNCSERVER_LIBS = -L$(PREFIX)/lib -lvncserver
 # VNCSERVER_DEFS = -DENABLE_VNCSERVER -I$(PREFIX)/include -DENABLE_VNCSERVER_COPYRECT
 RAWFB_SUB_LIBS = -ldisplay_x11 $(X11_LIBS)
-RAWFB_SUB_DEFS = -DRFB_RENDER_DEVICE=x11 # -DRFB_DEPTH_24BIT
+RAWFB_SUB_DEFS = -DRFB_SUB_DEVICE=x11 # -DRFB_DEPTH_24BIT
 RAWFB_LIBS = $(FREETYPE_LIBS) $(RAWFB_SUB_LIBS) $(VNCSERVER_LIBS)
 RAWFB_DEFS = $(FREETYPE_DEFS) $(RAWFB_SUB_DEFS) $(VNCSERVER_DEFS) # -DFNT_DEFDIR=\"$(SYS_LUA_SHARE)/tek/ui/font\"
 # Comment out RAWFB_SUB for a 'headless' GUI. VNC support makes this software
@@ -124,6 +126,8 @@ OPT = -O2 -fno-strict-aliasing
 INCL = -I. -Iinclude -I$(INCDIR)
 LIBCFLAGS = $(DEBUG) $(WARN) $(OPT) $(INCL) $(EXTRADEFS)
 MODCFLAGS = -shared -L $(LIBDIR)
+# For Mac OS X:
+# MODCFLAGS = -bundle -undefined dynamic_lookup -L $(LIBDIR)
 BINCFLAGS = $(DEBUG) $(WARN) $(OPT) $(INCL) $(EXTRADEFS)
 
 #------------------------------------------------------------------------------
